@@ -1,321 +1,431 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-type BarData = {
-  heights: string[];
-  values: string[];
-};
+/* ── Types ───────────────────────────────────────────────── */
+type BarData = { heights: number[]; values: string[] };
 
-const qtyData: BarData = {
-  heights: ['h-60', 'h-85', 'h-40', 'h-70', 'h-95'],
-  values: ['120', '170', '80', '140', '190'],
-};
-
-const valData: BarData = {
-  heights: ['h-95', 'h-70', 'h-30', 'h-50', 'h-40'],
-  values: ['$47.8K', '$33.8K', '$11.9K', '$13.9K', '$11.2K'],
-};
-
+/* ── Chart data ──────────────────────────────────────────── */
+const qtyData: BarData = { heights: [60, 85, 40, 70, 95], values: ['120', '170', '80', '140', '190'] };
+const valData: BarData = { heights: [95, 70, 30, 50, 40], values: ['$47.8K', '$33.8K', '$11.9K', '$13.9K', '$11.2K'] };
 const barLabels = ['Monitors', 'Keyboards', 'Mice', 'Headsets', 'Mousepads'];
 
+/* ── Shared input helpers ────────────────────────────────── */
+const inputCls = "w-full px-4 py-3.5 rounded-lg text-base bg-[#080810] text-[#f0f0ff] outline-none transition-all duration-300";
+const inputStyle = { border: '2px solid #2a2a4a', fontFamily: "'Inter', sans-serif" };
+const onFocus = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => { e.target.style.borderColor = '#22d3ee'; };
+const onBlur  = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => { e.target.style.borderColor = '#2a2a4a'; };
+
+/* ── Modal wrapper ───────────────────────────────────────── */
+function Modal({ onClose, title, children }: { onClose: () => void; title: string; children: React.ReactNode }) {
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center z-[200] p-4"
+      style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div
+        className="relative w-full max-w-[600px] rounded-2xl p-[50px] max-h-[90vh] overflow-y-auto"
+        style={{
+          background: 'linear-gradient(145deg, #111127, #0d0d22)',
+          border: '1px solid #2a2a4a',
+          boxShadow: '0 30px 80px rgba(0,0,0,0.7)',
+        }}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-5 right-5 w-9 h-9 flex items-center justify-center rounded-lg text-xl text-[#a0a0cc] transition-all duration-300 hover:text-white"
+          style={{ background: 'rgba(255,255,255,0.05)', border: 'none' }}
+        >
+          &times;
+        </button>
+        <h2 className="mb-6 text-[1.5rem] text-[#f0f0ff]" style={{ fontFamily: "'Orbitron', sans-serif" }}>{title}</h2>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/* ── Shared table ────────────────────────────────────────── */
+function StockTable({ compact = false }: { compact?: boolean }) {
+  const rows = [
+    { id: '#001', name: compact ? 'Alienware Monitor'  : 'Alienware 27" Monitor', cat: 'Monitors',  qty: 120, price: '$399', low: false },
+    { id: '#002', name: 'SteelSeries Apex Pro',                                   cat: 'Keyboards', qty: 170, price: '$199', low: false },
+    { id: '#003', name: 'Logitech G Pro X',                                        cat: 'Mice',      qty: 12,  price: '$149', low: true  },
+    { id: '#004', name: 'HyperX Cloud II',                                         cat: 'Headsets',  qty: 140, price: '$99',  low: false },
+    { id: '#005', name: 'Corsair MM700 XL',                                        cat: 'Mousepads', qty: 190, price: '$59',  low: false },
+  ];
+  const headers = compact
+    ? ['ID', 'Item Name', 'Category', 'Qty', 'Price']
+    : ['ID', 'Item Name', 'Category', 'Quantity', 'Unit Price', 'Status'];
+
+  return (
+    <div className="w-full overflow-x-auto">
+      <table className="w-full rounded-2xl overflow-hidden" style={{ borderCollapse: 'collapse', background: '#111127', boxShadow: '0 10px 40px rgba(0,0,0,0.4)' }}>
+        <thead style={{ background: 'linear-gradient(135deg, #1a1a3a, #0d0d2a)' }}>
+          <tr>
+            {headers.map(h => (
+              <th key={h} className="px-6 py-5 text-left font-bold text-[0.85rem] uppercase tracking-widest text-cyan-400"
+                style={{ fontFamily: "'Orbitron', sans-serif", borderBottom: '2px solid #2a2a4a' }}>
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={r.id} className="cursor-pointer transition-all duration-300"
+              style={{ background: i % 2 === 0 ? '#111127' : 'rgba(0,0,0,0.2)', borderBottom: i < rows.length - 1 ? '1px solid #2a2a4a' : 'none' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.background = 'linear-gradient(90deg, rgba(124,58,237,0.08), rgba(34,211,238,0.08))'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.background = i % 2 === 0 ? '#111127' : 'rgba(0,0,0,0.2)'; }}
+            >
+              <td className="px-6 py-[18px] align-middle text-[#a0a0cc]">{r.id}</td>
+              <td className="px-6 py-[18px] align-middle text-[#a0a0cc]">{r.name}</td>
+              <td className="px-6 py-[18px] align-middle text-[#a0a0cc]">{r.cat}</td>
+              <td className="px-6 py-[18px] align-middle text-[#a0a0cc]">{r.qty}</td>
+              <td className="px-6 py-[18px] align-middle text-[#a0a0cc]">{r.price}</td>
+              {!compact && (
+                <td className="px-6 py-[18px] align-middle">
+                  <span
+                    className="px-3 py-1 rounded-full text-[0.8rem] font-bold"
+                    style={r.low
+                      ? { background: 'rgba(244,63,94,0.15)', color: '#f43f5e', border: '1px solid rgba(244,63,94,0.3)' }
+                      : { background: 'rgba(34,197,94,0.15)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.3)' }
+                    }
+                  >
+                    {r.low ? 'Low Stock' : 'In Stock'}
+                  </span>
+                </td>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/* ── Dashboard ───────────────────────────────────────────── */
 export default function Dashboard() {
   const [activeChart, setActiveChart] = useState<'qty' | 'val'>('qty');
-  const [viewModal, setViewModal] = useState(false);
+  const [viewModal,   setViewModal]   = useState(false);
   const [insertModal, setInsertModal] = useState(false);
   const [updateModal, setUpdateModal] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
 
-  const [newName, setNewName] = useState('');
+  const [newName,     setNewName]     = useState('');
   const [newCategory, setNewCategory] = useState('');
-  const [newQty, setNewQty] = useState('');
-  const [newPrice, setNewPrice] = useState('');
-
-  const [updId, setUpdId] = useState('');
-  const [updQty, setUpdQty] = useState('');
-  const [updPrice, setUpdPrice] = useState('');
-
-  const [delId, setDelId] = useState('');
+  const [newQty,      setNewQty]      = useState('');
+  const [newPrice,    setNewPrice]    = useState('');
+  const [updId,       setUpdId]       = useState('');
+  const [updQty,      setUpdQty]      = useState('');
+  const [updPrice,    setUpdPrice]    = useState('');
+  const [delId,       setDelId]       = useState('');
 
   const chartData = activeChart === 'qty' ? qtyData : valData;
 
   function handleInsert() {
-    if (!newName || !newCategory || !newQty || !newPrice) {
-      alert('Please fill in all fields before adding the item.');
-      return;
-    }
+    if (!newName || !newCategory || !newQty || !newPrice) { alert('Please fill in all fields.'); return; }
     alert(`✅ Item "${newName}" (${newCategory}) — Qty: ${newQty}, Price: $${newPrice} has been added!`);
-    setInsertModal(false);
-    setNewName(''); setNewCategory(''); setNewQty(''); setNewPrice('');
+    setInsertModal(false); setNewName(''); setNewCategory(''); setNewQty(''); setNewPrice('');
   }
-
   function handleUpdate() {
     if (!updId) { alert('Please enter a Stock ID to update.'); return; }
     alert(`✅ Stock record "${updId}" updated — New Qty: ${updQty || 'unchanged'}, New Price: ${updPrice ? '$' + updPrice : 'unchanged'}`);
-    setUpdateModal(false);
-    setUpdId(''); setUpdQty(''); setUpdPrice('');
+    setUpdateModal(false); setUpdId(''); setUpdQty(''); setUpdPrice('');
   }
-
   function handleDelete() {
     if (!delId) { alert('Please enter a Stock ID to delete.'); return; }
     if (window.confirm(`Are you sure you want to permanently delete stock record "${delId}"?`)) {
       alert(`🗑️ Stock record "${delId}" has been deleted.`);
-      setDeleteModal(false);
-      setDelId('');
+      setDeleteModal(false); setDelId('');
     }
   }
 
+  /* KPI cards config */
+  const kpiCards = [
+    { icon: '📦', num: '700',  label: 'Total Stock Items', change: '+12% this month',   accent: '#22d3ee', bg: 'rgba(34,211,238,0.08)',  border: 'rgba(34,211,238,0.2)'  },
+    { icon: '⚠️', num: '3',    label: 'Low Stock Alerts',  change: 'Needs restocking',  accent: '#f43f5e', bg: 'rgba(244,63,94,0.08)',   border: 'rgba(244,63,94,0.2)'   },
+    { icon: '🗂️', num: '5',    label: 'Categories',        change: 'All monitored',     accent: '#7c3aed', bg: 'rgba(124,58,237,0.08)',  border: 'rgba(124,58,237,0.2)'  },
+    { icon: '💰', num: '$48K', label: 'Inventory Value',   change: '+5% this quarter',  accent: '#fbbf24', bg: 'rgba(251,191,36,0.08)',  border: 'rgba(251,191,36,0.2)'  },
+  ];
+
+  /* Action cards config */
+  const actionCards = [
+    { icon: '👁️', title: 'View All Stock',   desc: 'Browse the complete inventory of all items in the database.',    label: 'View All Records', onClick: () => setViewModal(true),   accent: '#22d3ee' },
+    { icon: '➕', title: 'Insert New Stock', desc: 'Add new equipment items to the inventory database.',              label: 'Add New Item',     onClick: () => setInsertModal(true), accent: '#22c55e' },
+    { icon: '✏️', title: 'Update Stock',     desc: 'Modify quantity or details of existing stock records.',           label: 'Update Record',    onClick: () => setUpdateModal(true), accent: '#7c3aed' },
+    { icon: '🗑️', title: 'Delete Stock',     desc: 'Remove discontinued or obsolete items from the system.',         label: 'Delete Record',    onClick: () => setDeleteModal(true), accent: '#f43f5e' },
+  ];
+
+  const quickLinks = [
+    { to: '#',           label: '📤 Export CSV' },
+    { to: '#',           label: '📊 Generate Report' },
+    { to: '#',           label: '🔔 Stock Alerts' },
+    { to: '#',           label: '🗃️ Archive Records' },
+    { to: '#',           label: '⚙️ Stock Settings' },
+    { to: '#',           label: '📋 Audit Log' },
+    { to: '/signup',     label: '🏆 Tournament Teams' },
+    { to: '/leaderboard',label: '📈 Leaderboard' },
+  ];
+
   return (
-    <main className="page">
-      <div className="dashboard-container">
+    <main className="flex-1 flex flex-col items-center w-full max-w-[1300px] mx-auto px-10 py-[70px] box-border">
+      <div className="w-full">
 
         {/* Header */}
-        <div className="dashboard-header">
-          <h1 className="dashboard-title">Stock Management Dashboard</h1>
-          <p className="dashboard-subtitle">Monitor, manage and control all tournament equipment inventory in one place.</p>
+        <div className="text-center mb-10">
+          <h1 className="text-[2.5rem] text-[#f0f0ff] mb-3" style={{ fontFamily: "'Orbitron', sans-serif" }}>
+            Stock Management Dashboard
+          </h1>
+          <p className="text-[1.05rem] text-[#a0a0cc]">
+            Monitor, manage and control all tournament equipment inventory in one place.
+          </p>
         </div>
 
-        {/* KPI Stats Row */}
-        <div className="dash-stats-row">
-          <div className="dash-stat-card cyan">
-            <span className="dash-stat-icon">📦</span>
-            <span className="dash-stat-number">700</span>
-            <span className="dash-stat-label">Total Stock Items</span>
-            <span className="dash-stat-change">+12% this month</span>
-          </div>
-          <div className="dash-stat-card pink">
-            <span className="dash-stat-icon">⚠️</span>
-            <span className="dash-stat-number">3</span>
-            <span className="dash-stat-label">Low Stock Alerts</span>
-            <span className="dash-stat-change down">Needs restocking</span>
-          </div>
-          <div className="dash-stat-card purple">
-            <span className="dash-stat-icon">🗂️</span>
-            <span className="dash-stat-number">5</span>
-            <span className="dash-stat-label">Categories</span>
-            <span className="dash-stat-change">All monitored</span>
-          </div>
-          <div className="dash-stat-card gold">
-            <span className="dash-stat-icon">💰</span>
-            <span className="dash-stat-number">$48K</span>
-            <span className="dash-stat-label">Inventory Value</span>
-            <span className="dash-stat-change">+5% this quarter</span>
-          </div>
+        {/* KPI Row */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+          {kpiCards.map(({ icon, num, label, change, accent, bg, border }) => (
+            <div
+              key={label}
+              className="flex flex-col items-center text-center gap-2 rounded-2xl p-7 transition-all duration-300"
+              style={{ background: bg, border: `1px solid ${border}` }}
+            >
+              <span className="text-3xl">{icon}</span>
+              <span className="font-black text-[2rem]" style={{ fontFamily: "'Orbitron', sans-serif", color: accent }}>{num}</span>
+              <span className="text-[0.9rem] text-[#a0a0cc]">{label}</span>
+              <span className="text-[0.8rem] text-[#666688]">{change}</span>
+            </div>
+          ))}
         </div>
 
         {/* Action Cards */}
-        <div className="dash-actions-row">
-          <div className="dash-action-card view">
-            <span className="dash-action-icon">👁️</span>
-            <h3 className="dash-action-title">View All Stock</h3>
-            <p className="dash-action-desc">Browse the complete inventory of all items in the database.</p>
-            <button onClick={() => setViewModal(true)}>View All Records</button>
-          </div>
-          <div className="dash-action-card insert">
-            <span className="dash-action-icon">➕</span>
-            <h3 className="dash-action-title">Insert New Stock</h3>
-            <p className="dash-action-desc">Add new equipment items to the inventory database.</p>
-            <button onClick={() => setInsertModal(true)}>Add New Item</button>
-          </div>
-          <div className="dash-action-card update">
-            <span className="dash-action-icon">✏️</span>
-            <h3 className="dash-action-title">Update Stock</h3>
-            <p className="dash-action-desc">Modify quantity or details of existing stock records.</p>
-            <button onClick={() => setUpdateModal(true)}>Update Record</button>
-          </div>
-          <div className="dash-action-card delete">
-            <span className="dash-action-icon">🗑️</span>
-            <h3 className="dash-action-title">Delete Stock</h3>
-            <p className="dash-action-desc">Remove discontinued or obsolete items from the system.</p>
-            <button onClick={() => setDeleteModal(true)}>Delete Record</button>
-          </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+          {actionCards.map(({ icon, title, desc, label, onClick, accent }) => (
+            <div
+              key={title}
+              className="flex flex-col items-center text-center gap-3 rounded-2xl p-7 transition-all duration-300"
+              style={{ background: '#111127', border: '1px solid #2a2a4a' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = accent; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = '#2a2a4a'; }}
+            >
+              <span className="text-3xl">{icon}</span>
+              <h3 className="m-0 text-[1rem] text-[#f0f0ff]" style={{ fontFamily: "'Orbitron', sans-serif" }}>{title}</h3>
+              <p className="m-0 text-[0.85rem] text-[#a0a0cc] flex-1">{desc}</p>
+              <button
+                onClick={onClick}
+                className="btn-shimmer mt-2 px-5 py-2.5 text-[0.9rem] rounded-lg font-bold text-white cursor-pointer transition-all duration-300 hover:-translate-y-0.5"
+                style={{ background: 'linear-gradient(135deg, #7c3aed, #9333ea)', border: 'none', fontFamily: "'Inter', sans-serif" }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 30px rgba(124,58,237,0.5)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none'; }}
+              >
+                {label}
+              </button>
+            </div>
+          ))}
         </div>
 
-        {/* Chart Section */}
-        <div className="chart-section">
-          <div className="chart-header">
-            <h2 className="chart-title">Stock Quantity by Category</h2>
-            <div className="chart-controls">
-              <button
-                className={`chart-btn${activeChart === 'qty' ? ' active' : ''}`}
-                onClick={() => setActiveChart('qty')}
-              >
-                Quantity
-              </button>
-              <button
-                className={`chart-btn${activeChart === 'val' ? ' active' : ''}`}
-                onClick={() => setActiveChart('val')}
-              >
-                Value
-              </button>
+        {/* Bar Chart */}
+        <div
+          className="rounded-2xl p-8 mb-8"
+          style={{ background: '#111127', border: '1px solid #2a2a4a' }}
+        >
+          <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
+            <h2 className="text-[1.3rem] text-[#f0f0ff] m-0" style={{ fontFamily: "'Orbitron', sans-serif" }}>
+              Stock Quantity by Category
+            </h2>
+            <div className="flex gap-2">
+              {(['qty', 'val'] as const).map(k => (
+                <button
+                  key={k}
+                  onClick={() => setActiveChart(k)}
+                  className="px-4 py-2 text-[0.85rem] rounded-lg font-semibold cursor-pointer transition-all duration-300"
+                  style={{
+                    background: activeChart === k ? 'linear-gradient(135deg, #7c3aed, #9333ea)' : 'rgba(255,255,255,0.05)',
+                    border: activeChart === k ? 'none' : '1px solid #2a2a4a',
+                    color: activeChart === k ? '#fff' : '#a0a0cc',
+                    fontFamily: "'Inter', sans-serif",
+                  }}
+                >
+                  {k === 'qty' ? 'Quantity' : 'Value'}
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className="bar-chart-wrap">
+          {/* Bars */}
+          <div className="flex items-end justify-around gap-4 h-[200px] px-4">
             {barLabels.map((label, i) => (
-              <div className="bar-item" key={label}>
-                <div className={`bar-fill ${chartData.heights[i]}`}>
-                  <span className="bar-val">{chartData.values[i]}</span>
-                </div>
-                <span className="bar-lbl">{label}</span>
+              <div key={label} className="flex flex-col items-center gap-2 flex-1">
+                <span className="text-[0.8rem] text-cyan-400 font-semibold">{chartData.values[i]}</span>
+                <div
+                  className="w-full rounded-t-lg transition-all duration-500"
+                  style={{
+                    height: `${chartData.heights[i]}%`,
+                    background: 'linear-gradient(180deg, #7c3aed, #22d3ee)',
+                    minHeight: '8px',
+                  }}
+                />
+                <span className="text-[0.75rem] text-[#a0a0cc] text-center">{label}</span>
               </div>
             ))}
           </div>
 
-          <div className="chart-legend">
-            <div className="legend-item">
-              <span className="legend-dot"></span>
-              <span>Units in Stock</span>
-            </div>
+          {/* Legend */}
+          <div className="flex items-center gap-2 mt-4">
+            <span className="w-3 h-3 rounded-full" style={{ background: 'linear-gradient(135deg, #7c3aed, #22d3ee)' }} />
+            <span className="text-[0.85rem] text-[#a0a0cc]">Units in Stock</span>
           </div>
         </div>
 
         {/* Recent Stock Table */}
-        <div className="dash-table-section">
-          <div className="dash-table-header">
-            <h2 className="dash-table-title">Recent Stock Records</h2>
-            <button className="sm-button" onClick={() => setViewModal(true)}>View All</button>
+        <div
+          className="rounded-2xl p-8 mb-8"
+          style={{ background: '#111127', border: '1px solid #2a2a4a' }}
+        >
+          <div className="flex justify-between items-center mb-5 flex-wrap gap-4">
+            <h2 className="text-[1.3rem] text-[#f0f0ff] m-0" style={{ fontFamily: "'Orbitron', sans-serif" }}>
+              Recent Stock Records
+            </h2>
+            <button
+              onClick={() => setViewModal(true)}
+              className="btn-shimmer px-[18px] py-2 text-[0.9rem] rounded-lg font-bold text-white cursor-pointer transition-all duration-300"
+              style={{ background: 'linear-gradient(135deg, #7c3aed, #9333ea)', border: 'none', fontFamily: "'Inter', sans-serif" }}
+            >
+              View All
+            </button>
           </div>
-          <div className="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th><th>Item Name</th><th>Category</th><th>Quantity</th><th>Unit Price</th><th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td>#001</td><td>Alienware 27" Monitor</td><td>Monitors</td><td>120</td><td>$399</td><td><span className="badge-ok">In Stock</span></td></tr>
-                <tr><td>#002</td><td>SteelSeries Apex Pro</td><td>Keyboards</td><td>170</td><td>$199</td><td><span className="badge-ok">In Stock</span></td></tr>
-                <tr><td>#003</td><td>Logitech G Pro X</td><td>Mice</td><td>12</td><td>$149</td><td><span className="badge-low">Low Stock</span></td></tr>
-                <tr><td>#004</td><td>HyperX Cloud II</td><td>Headsets</td><td>140</td><td>$99</td><td><span className="badge-ok">In Stock</span></td></tr>
-                <tr><td>#005</td><td>Corsair MM700 XL</td><td>Mousepads</td><td>190</td><td>$59</td><td><span className="badge-ok">In Stock</span></td></tr>
-              </tbody>
-            </table>
-          </div>
+          <StockTable />
         </div>
 
         {/* Quick Links */}
-        <div className="dash-links-section">
-          <h2 className="dash-links-title">Quick Links &amp; Tools</h2>
-          <div className="dash-links-grid">
-            <Link to="#" className="dash-link-btn">📤 Export CSV</Link>
-            <Link to="#" className="dash-link-btn">📊 Generate Report</Link>
-            <Link to="#" className="dash-link-btn">🔔 Stock Alerts</Link>
-            <Link to="#" className="dash-link-btn">🗃️ Archive Records</Link>
-            <Link to="#" className="dash-link-btn">⚙️ Stock Settings</Link>
-            <Link to="#" className="dash-link-btn">📋 Audit Log</Link>
-            <Link to="/signup" className="dash-link-btn">🏆 Tournament Teams</Link>
-            <Link to="/leaderboard" className="dash-link-btn">📈 Leaderboard</Link>
+        <div
+          className="rounded-2xl p-8"
+          style={{ background: '#111127', border: '1px solid #2a2a4a' }}
+        >
+          <h2 className="text-[1.3rem] text-[#f0f0ff] mb-5" style={{ fontFamily: "'Orbitron', sans-serif" }}>
+            Quick Links &amp; Tools
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {quickLinks.map(({ to, label }) => (
+              <Link
+                key={label}
+                to={to}
+                className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-[0.9rem] font-semibold no-underline transition-all duration-300 hover:-translate-y-0.5"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid #2a2a4a',
+                  color: '#a0a0cc',
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLAnchorElement).style.borderColor = '#22d3ee';
+                  (e.currentTarget as HTMLAnchorElement).style.color = '#22d3ee';
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLAnchorElement).style.borderColor = '#2a2a4a';
+                  (e.currentTarget as HTMLAnchorElement).style.color = '#a0a0cc';
+                }}
+              >
+                {label}
+              </Link>
+            ))}
           </div>
         </div>
-
       </div>
 
-      {/* VIEW ALL MODAL */}
+      {/* ── MODALS ─────────────────────────────────────────── */}
+
+      {/* View All */}
       {viewModal && (
-        <div className="modal-overlay active" onClick={(e) => { if (e.target === e.currentTarget) setViewModal(false); }}>
-          <div className="modal-box">
-            <button className="modal-close" onClick={() => setViewModal(false)}>&times;</button>
-            <h2 className="modal-title">All Stock Records</h2>
-            <div className="modal-table-wrap">
-              <table>
-                <thead><tr><th>ID</th><th>Item Name</th><th>Category</th><th>Qty</th><th>Price</th></tr></thead>
-                <tbody>
-                  <tr><td>#001</td><td>Alienware Monitor</td><td>Monitors</td><td>120</td><td>$399</td></tr>
-                  <tr><td>#002</td><td>SteelSeries Apex Pro</td><td>Keyboards</td><td>170</td><td>$199</td></tr>
-                  <tr><td>#003</td><td>Logitech G Pro X</td><td>Mice</td><td>12</td><td>$149</td></tr>
-                  <tr><td>#004</td><td>HyperX Cloud II</td><td>Headsets</td><td>140</td><td>$99</td></tr>
-                  <tr><td>#005</td><td>Corsair MM700 XL</td><td>Mousepads</td><td>190</td><td>$59</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+        <Modal onClose={() => setViewModal(false)} title="All Stock Records">
+          <StockTable compact />
+        </Modal>
       )}
 
-      {/* INSERT MODAL */}
+      {/* Insert */}
       {insertModal && (
-        <div className="modal-overlay active" onClick={(e) => { if (e.target === e.currentTarget) setInsertModal(false); }}>
-          <div className="modal-box">
-            <button className="modal-close" onClick={() => setInsertModal(false)}>&times;</button>
-            <h2 className="modal-title">Insert New Stock Item</h2>
-            <div className="modal-form">
-              <div>
-                <label htmlFor="new-item-name">Item Name</label>
-                <input type="text" id="new-item-name" placeholder="e.g. Razer BlackWidow" value={newName} onChange={e => setNewName(e.target.value)} />
-              </div>
-              <div>
-                <label htmlFor="new-category">Category</label>
-                <div className="select-container">
-                  <select id="new-category" value={newCategory} onChange={e => setNewCategory(e.target.value)}>
-                    <option value="">Select category...</option>
-                    <option>Monitors</option><option>Keyboards</option><option>Mice</option><option>Headsets</option><option>Mousepads</option>
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label htmlFor="new-qty">Quantity</label>
-                <input type="number" id="new-qty" placeholder="e.g. 50" min={1} value={newQty} onChange={e => setNewQty(e.target.value)} />
-              </div>
-              <div>
-                <label htmlFor="new-price">Unit Price ($)</label>
-                <input type="number" id="new-price" placeholder="e.g. 199" min={0} value={newPrice} onChange={e => setNewPrice(e.target.value)} />
-              </div>
-              <div className="modal-actions">
-                <button className="btn-success" onClick={handleInsert}>Add Item</button>
-                <button className="btn-danger" onClick={() => setInsertModal(false)}>Cancel</button>
-              </div>
+        <Modal onClose={() => setInsertModal(false)} title="Insert New Stock Item">
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <label className="font-semibold text-[0.95rem] text-[#f0f0ff]">Item Name</label>
+              <input type="text" placeholder="e.g. Razer BlackWidow" value={newName} onChange={e => setNewName(e.target.value)}
+                className={inputCls} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="font-semibold text-[0.95rem] text-[#f0f0ff]">Category</label>
+              <select value={newCategory} onChange={e => setNewCategory(e.target.value)}
+                className="w-full px-4 py-3.5 rounded-lg appearance-none cursor-pointer text-base bg-[#080810] text-[#f0f0ff] outline-none"
+                style={inputStyle} onFocus={onFocus} onBlur={onBlur}>
+                <option value="">Select category...</option>
+                {['Monitors','Keyboards','Mice','Headsets','Mousepads'].map(c => <option key={c}>{c}</option>)}
+              </select>
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="font-semibold text-[0.95rem] text-[#f0f0ff]">Quantity</label>
+              <input type="number" placeholder="e.g. 50" min={1} value={newQty} onChange={e => setNewQty(e.target.value)}
+                className={inputCls} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="font-semibold text-[0.95rem] text-[#f0f0ff]">Unit Price ($)</label>
+              <input type="number" placeholder="e.g. 199" min={0} value={newPrice} onChange={e => setNewPrice(e.target.value)}
+                className={inputCls} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+            </div>
+            <div className="flex gap-3 mt-2">
+              <button onClick={handleInsert} className="btn-shimmer flex-1 py-3 rounded-lg font-bold text-white cursor-pointer"
+                style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', border: 'none' }}>Add Item</button>
+              <button onClick={() => setInsertModal(false)} className="btn-shimmer flex-1 py-3 rounded-lg font-bold text-white cursor-pointer"
+                style={{ background: 'linear-gradient(135deg, #f43f5e, #e11d48)', border: 'none' }}>Cancel</button>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
 
-      {/* UPDATE MODAL */}
+      {/* Update */}
       {updateModal && (
-        <div className="modal-overlay active" onClick={(e) => { if (e.target === e.currentTarget) setUpdateModal(false); }}>
-          <div className="modal-box">
-            <button className="modal-close" onClick={() => setUpdateModal(false)}>&times;</button>
-            <h2 className="modal-title">Update Stock Record</h2>
-            <div className="modal-form">
-              <div>
-                <label htmlFor="upd-id">Stock ID</label>
-                <input type="text" id="upd-id" placeholder="e.g. #001" value={updId} onChange={e => setUpdId(e.target.value)} />
-              </div>
-              <div>
-                <label htmlFor="upd-qty">New Quantity</label>
-                <input type="number" id="upd-qty" placeholder="e.g. 200" min={0} value={updQty} onChange={e => setUpdQty(e.target.value)} />
-              </div>
-              <div>
-                <label htmlFor="upd-price">New Price ($)</label>
-                <input type="number" id="upd-price" placeholder="e.g. 249" min={0} value={updPrice} onChange={e => setUpdPrice(e.target.value)} />
-              </div>
-              <div className="modal-actions">
-                <button className="btn-success" onClick={handleUpdate}>Save Changes</button>
-                <button className="btn-danger" onClick={() => setUpdateModal(false)}>Cancel</button>
-              </div>
+        <Modal onClose={() => setUpdateModal(false)} title="Update Stock Record">
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <label className="font-semibold text-[0.95rem] text-[#f0f0ff]">Stock ID</label>
+              <input type="text" placeholder="e.g. #001" value={updId} onChange={e => setUpdId(e.target.value)}
+                className={inputCls} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="font-semibold text-[0.95rem] text-[#f0f0ff]">New Quantity</label>
+              <input type="number" placeholder="e.g. 200" min={0} value={updQty} onChange={e => setUpdQty(e.target.value)}
+                className={inputCls} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="font-semibold text-[0.95rem] text-[#f0f0ff]">New Price ($)</label>
+              <input type="number" placeholder="e.g. 249" min={0} value={updPrice} onChange={e => setUpdPrice(e.target.value)}
+                className={inputCls} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+            </div>
+            <div className="flex gap-3 mt-2">
+              <button onClick={handleUpdate} className="btn-shimmer flex-1 py-3 rounded-lg font-bold text-white cursor-pointer"
+                style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', border: 'none' }}>Save Changes</button>
+              <button onClick={() => setUpdateModal(false)} className="btn-shimmer flex-1 py-3 rounded-lg font-bold text-white cursor-pointer"
+                style={{ background: 'linear-gradient(135deg, #f43f5e, #e11d48)', border: 'none' }}>Cancel</button>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
 
-      {/* DELETE MODAL */}
+      {/* Delete */}
       {deleteModal && (
-        <div className="modal-overlay active" onClick={(e) => { if (e.target === e.currentTarget) setDeleteModal(false); }}>
-          <div className="modal-box">
-            <button className="modal-close" onClick={() => setDeleteModal(false)}>&times;</button>
-            <h2 className="modal-title">Delete Stock Record</h2>
-            <div className="modal-form">
-              <div>
-                <label htmlFor="del-id">Stock ID to Delete</label>
-                <input type="text" id="del-id" placeholder="e.g. #003" value={delId} onChange={e => setDelId(e.target.value)} />
-              </div>
-              <p>This action is permanent and cannot be undone.</p>
-              <div className="modal-actions">
-                <button className="btn-danger" onClick={handleDelete}>Confirm Delete</button>
-                <button onClick={() => setDeleteModal(false)}>Cancel</button>
-              </div>
+        <Modal onClose={() => setDeleteModal(false)} title="Delete Stock Record">
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <label className="font-semibold text-[0.95rem] text-[#f0f0ff]">Stock ID to Delete</label>
+              <input type="text" placeholder="e.g. #003" value={delId} onChange={e => setDelId(e.target.value)}
+                className={inputCls} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+            </div>
+            <p className="text-[0.95rem] text-[#a0a0cc] m-0">This action is permanent and cannot be undone.</p>
+            <div className="flex gap-3 mt-2">
+              <button onClick={handleDelete} className="btn-shimmer flex-1 py-3 rounded-lg font-bold text-white cursor-pointer"
+                style={{ background: 'linear-gradient(135deg, #f43f5e, #e11d48)', border: 'none' }}>Confirm Delete</button>
+              <button onClick={() => setDeleteModal(false)} className="btn-shimmer flex-1 py-3 rounded-lg font-bold text-white cursor-pointer"
+                style={{ background: 'linear-gradient(135deg, #7c3aed, #9333ea)', border: 'none' }}>Cancel</button>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
     </main>
   );
