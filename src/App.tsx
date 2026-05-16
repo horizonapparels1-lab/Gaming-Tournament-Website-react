@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/Navbar/page';
 import Footer from './components/Footer/page';
 import Login from './pages/Login/page';
@@ -8,6 +9,10 @@ import Leaderboard from './pages/Leaderboard/page';
 import Results from './pages/Results/page';
 import Services from './pages/Services/page';
 import Contact from './pages/Contact/page';
+import About from './pages/About/page';
+import Profile from './pages/Profile/page';
+import Cart from './pages/Cart/page';
+import Reviews from './pages/Reviews/page';
 
 /* ── Reusable primitives ─────────────────────────────────── */
 
@@ -189,9 +194,9 @@ function Home() {
       >
         {[
           { num: '1,200+', label: 'Teams Registered' },
-          { num: '48',     label: 'Tournaments Hosted' },
-          { num: '$500K',  label: 'Total Prize Pool' },
-          { num: '32',     label: 'Countries Represented' },
+          { num: '48', label: 'Tournaments Hosted' },
+          { num: '$500K', label: 'Total Prize Pool' },
+          { num: '32', label: 'Countries Represented' },
         ].map(({ num, label }) => (
           <div key={label} className="flex flex-col items-center gap-2 min-w-[150px]">
             <StatNumber>{num}</StatNumber>
@@ -233,10 +238,10 @@ function Home() {
           Why Join NexGen?
         </h2>
         <div className="flex flex-wrap gap-6 justify-center">
-          <FeatureCard icon="🏆" title="Massive Prize Pools"  desc="Compete for life-changing prize pools across every major esports title with guaranteed payouts." />
-          <FeatureCard icon="🌍" title="Global Competition"   desc="Face off against the best teams from over 32 countries in international bracket play." />
-          <FeatureCard icon="📡" title="Live Broadcasts"      desc="Every match is streamed live with professional commentary and real-time stats." />
-          <FeatureCard icon="⚡" title="Instant Rankings"     desc="Our live leaderboard updates after every match so standings are always accurate." />
+          <FeatureCard icon="🏆" title="Massive Prize Pools" desc="Compete for life-changing prize pools across every major esports title with guaranteed payouts." />
+          <FeatureCard icon="🌍" title="Global Competition" desc="Face off against the best teams from over 32 countries in international bracket play." />
+          <FeatureCard icon="📡" title="Live Broadcasts" desc="Every match is streamed live with professional commentary and real-time stats." />
+          <FeatureCard icon="⚡" title="Instant Rankings" desc="Our live leaderboard updates after every match so standings are always accurate." />
         </div>
       </div>
 
@@ -249,10 +254,10 @@ function Home() {
           Upcoming Tournaments
         </h2>
         <div className="flex flex-col gap-4 w-full max-w-[900px] mx-auto">
-          <UpcomingItem game="Valorant Masters 2024"    date="June 15, 2024"      prize="$50,000"  badge="Open" />
-          <UpcomingItem game="Apex Legends Championship" date="July 3, 2024"      prize="$30,000"  badge="Open" />
-          <UpcomingItem game="CS2 Major Invitational"   date="August 20, 2024"    prize="$100,000" badge="Invite Only" />
-          <UpcomingItem game="Rocket League Cup"        date="September 5, 2024"  prize="$20,000"  badge="Open" />
+          <UpcomingItem game="Valorant Masters 2024" date="June 15, 2024" prize="$50,000" badge="Open" />
+          <UpcomingItem game="Apex Legends Championship" date="July 3, 2024" prize="$30,000" badge="Open" />
+          <UpcomingItem game="CS2 Major Invitational" date="August 20, 2024" prize="$100,000" badge="Invite Only" />
+          <UpcomingItem game="Rocket League Cup" date="September 5, 2024" prize="$20,000" badge="Open" />
         </div>
       </div>
     </Page>
@@ -262,20 +267,26 @@ function Home() {
 /* ── App ─────────────────────────────────────────────────── */
 function App() {
   return (
-    <BrowserRouter>
-      <Navbar />
-      <Routes>
-        <Route path="/"            element={<Home />} />
-        <Route path="/login"       element={<Login />} />
-        <Route path="/signup"      element={<Signup />} />
-        <Route path="/leaderboard" element={<Leaderboard />} />
-        <Route path="/results"     element={<Results />} />
-        <Route path="/dashboard"   element={<Dashboard />} />
-        <Route path="/services"    element={<Services />} />
-        <Route path="/contact"     element={<Contact />} />
-      </Routes>
-      <Footer />
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/results" element={<Results />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/reviews" element={<Reviews />} />
+        </Routes>
+        <Footer />
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

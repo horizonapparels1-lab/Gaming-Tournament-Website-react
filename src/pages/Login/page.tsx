@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 export default function Login() {
   return (
     <main className="flex-1 flex flex-col items-center w-full max-w-[1300px] mx-auto px-10 py-[70px] box-border">
@@ -63,6 +65,16 @@ export default function Login() {
             >
               Login to Account
             </button>
+          </div>
+
+          <div className="mt-5 text-center">
+            <p className="text-[#a0a0cc] text-[0.95rem] mb-2">Don't have an account?</p>
+            <Link
+              to="/signup"
+              className="text-cyan-400 font-semibold text-[0.95rem] no-underline hover:text-cyan-300 transition-all duration-300"
+            >
+              Sign Up Here
+            </Link>
           </div>
         </form>
       </div>

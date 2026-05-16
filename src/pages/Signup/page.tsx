@@ -1,4 +1,5 @@
 /* ── Shared input style helpers ─────────────────────────── */
+import { Link } from 'react-router-dom';
 const inputCls = "w-full px-4 py-3.5 rounded-lg text-base bg-[#080810] text-[#f0f0ff] outline-none transition-all duration-300";
 const inputStyle = { border: '2px solid #2a2a4a', fontFamily: "'Inter', sans-serif" };
 const onFocus = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -116,6 +117,16 @@ export default function Signup() {
             >
               Submit Registration
             </button>
+          </div>
+
+          <div className="mt-5 text-center">
+            <p className="text-[#a0a0cc] text-[0.95rem] mb-2">Already have an account?</p>
+            <Link
+              to="/login"
+              className="text-cyan-400 font-semibold text-[0.95rem] no-underline hover:text-cyan-300 transition-all duration-300"
+            >
+              Login Here
+            </Link>
           </div>
         </form>
       </div>

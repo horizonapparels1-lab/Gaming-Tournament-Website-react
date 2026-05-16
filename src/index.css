@@ -16,20 +16,35 @@
   --font-inter: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 
   /* Navbar background tokens */
-  --color-nav-bg: rgba(10,10,20,0.9);
-  --color-nav-bg-mobile: rgba(10,10,20,0.98);
+  --color-nav-bg: rgba(10, 10, 20, 0.9);
+  --color-nav-bg-mobile: rgba(10, 10, 20, 0.98);
   --color-border-dark: #2a2a4a;
 
   --animate-fade-in-down: fadeInDown 0.8s ease forwards;
   --animate-fade-in-up: fadeInUp 0.8s ease 0.2s forwards;
 
   @keyframes fadeInDown {
-    from { opacity: 0; transform: translateY(-30px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(-30px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
+
   @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 
@@ -42,17 +57,34 @@
   }
 
   body {
-    font-family: var(--font-inter);
+    @apply font-[family-name:var(--font-inter)] transition-colors duration-300;
+  }
+
+  /* Dark mode (default) */
+  body {
     background-color: #080810;
     color: #f0f0ff;
     background-image:
-      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(124,58,237,0.12) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(34,211,238,0.08) 0%, transparent 60%);
+      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(124, 58, 237, 0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(34, 211, 238, 0.08) 0%, transparent 60%);
     background-attachment: fixed;
   }
 
-  h1, h2, h3, h4 {
-    font-family: var(--font-orbitron);
+  /* Light mode */
+  .dark body {
+    background-color: #080810;
+    color: #f0f0ff;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(124, 58, 237, 0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(34, 211, 238, 0.08) 0%, transparent 60%);
+  }
+
+  :root:not(.dark) body {
+    background-color: #f8f9fa;
+    color: #1a1a2e;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(124, 58, 237, 0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(34, 211, 238, 0.03) 0%, transparent 60%);
   }
 }
 
@@ -63,16 +95,23 @@
 ========================================================= */
 @layer components {
 
+  /* Orbitron font utility for headings */
+  .heading-orbitron {
+    @apply font-[family-name:var(--font-orbitron)];
+  }
+
   /* Shimmer sweep on buttons */
   .btn-shimmer {
     @apply relative overflow-hidden;
   }
+
   .btn-shimmer::before {
     content: '';
     @apply absolute top-0 -left-full w-full h-full;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
     transition: left 0.5s ease;
   }
+
   .btn-shimmer:hover::before {
     left: 100%;
   }
@@ -81,11 +120,13 @@
   .card-glow {
     @apply relative overflow-hidden;
   }
+
   .card-glow::before {
     content: '';
     @apply absolute top-0 left-0 right-0 h-[3px] opacity-0 transition-opacity duration-300;
     background: linear-gradient(90deg, #7c3aed, #22d3ee);
   }
+
   .card-glow:hover::before {
     @apply opacity-100;
   }
@@ -94,6 +135,7 @@
   .section-title-underline {
     @apply relative pb-[18px];
   }
+
   .section-title-underline::after {
     content: '';
     @apply absolute bottom-0 left-1/2 -translate-x-1/2 w-20 h-[3px] rounded-sm;
@@ -104,10 +146,12 @@
   .faq-question-toggle {
     @apply flex justify-between items-center cursor-pointer select-none;
   }
+
   .faq-question-toggle::after {
     content: '+';
     @apply text-2xl text-cyan-400 font-light flex-shrink-0 transition-transform duration-300;
   }
+
   .faq-open .faq-question-toggle::after {
     @apply rotate-45;
   }
